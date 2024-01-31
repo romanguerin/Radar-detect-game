@@ -31,6 +31,7 @@ function drawPlayer() {
 
     // Draw player physicaly for test purpose
     drawPlayerTest();
+    drawAfterBurn();
 
     // Update player orientation and position
     movePlayer();
@@ -60,7 +61,6 @@ function drawPlayerTest(){
 function movePlayer() {
     player.acc = p5.Vector.sub(player.vec2, player.vec1);
     player.acc.setMag(1); // Acceleration, default: 1
-
     player.vel.add(player.acc);
     player.vel.limit(player.speed);   // Velocity, default: 2, min: 2, max: 5
     player.vec1.add(player.vel);
@@ -78,42 +78,101 @@ function playerSpeed() {
     if (keyIsDown(83)) { // 'S' key for slower
         player.speed = lerp(player.speed, minSpeedValue, speedPlayer);
     }    
-    afterburn();
+
+    if (shiftPressed) { // 'SHIFT' for afterburn
+        updateSpeed();
+      }    
 }
 
-function afterburn() {
-let originalSpeed = 2;  // Set the original speed value here
-let afterburnDuration = 2000;  // Afterburn duration in milliseconds (2 seconds)
-let afterburnCooldown = 12000;  // Cooldown duration for afterburn in milliseconds (12 seconds)
-let afterburnActive = false;  // Variable to track whether afterburn is currently active
-let afterburnCoolActive = true;  // Variable to track whether afterburn is currently in cooldown
+// set custom time out for afterburn
+let isTimeoutActive = false;
 
-    // Check if the 'SHIFT' key is pressed and afterburn is not on cooldown
-    if (keyCode === 16 && !afterburnActive && afterburnCoolActive) { // 'SHIFT' key for afterburn
-        // Activate afterburn
-        player.speed = player.speed = lerp(player.speed, 10, 0.2);
+function setCustomTimeout() {
+    let cooldown = 24000;
+  if (!isTimeoutActive) {
+    isTimeoutActive = true;
 
-        // Set afterburn to be active
-        afterburnActive = true;
-        afterburnCoolActive = false;    
-        // Schedule the end of the afterburn duration
-        setTimeout(() => {
-            // Reset player speed to the original value
-            player.speed = originalSpeed;
-            console.log("1");
-            // End the afterburn duration
-            afterburnActive = false;
-            
-        }, afterburnDuration);  // Afterburn duration + Cooldown duration
+    // Set a timeout for 12 seconds
+    setTimeout(function () {
+      // After 12 seconds, set global boolean to true
+      isTimeoutActive = false;
+    }, cooldown);
+  } 
+}
+
+function drawAfterBurn() {
+    push();
+    // draw afterburn circle
+    if (shiftPressed){
+        console.log("test");
+        fill(255, 204, 0); 
+    } 
+    else if (isTimeoutActive){
+        console.log("test");
+        fill(255, 0, 0); 
     }
-        // Schedule the end of the afterburn cooldown
-        setTimeout(() => {
-            console.log("2");
-            // End the afterburn duration
-            afterburnCoolActive = true;
-        }, afterburnCooldown);  // Afterburn duration + Cooldown duration
+        else {
+            fill(0,255,0); 
+        }
+    circle(20, 20, 15);
+    text('AFTERBURN', 35, 25);
+    pop();
+}
+
+// variables that go with the afterburn
+let originalSpeed;
+let shiftPressed = false;
+let startTime;
+
+ function keyPressed() {
+    // Check if the shift key is pressed and the transition is not already in progress
+     if (keyCode === 16 && !shiftPressed && !isTimeoutActive){
+        //wait 12 seconds
+        setCustomTimeout();
+        // start smooth speed change
+       startSmoothSpeedChange();
+     }
+   }
+  
+  function startSmoothSpeedChange() {
+    // Save the original speed and start the transition
+    originalSpeed = player.speed;
+    shiftPressed = true;
+    startTime = millis();
+  }
+  
+  function updateSpeed() {
+    const currentTime = millis();
+    const elapsedTime = (currentTime - startTime) / 1000; // convert to seconds
+  
+    if (elapsedTime < 4) {
+        // Perform smooth speed transition
+      const smoothStepValue = smoothstep(0, 0.5, elapsedTime / 4);
+      console.log()
+      player.speed = lerp(originalSpeed, 12, smoothStepValue);
+    } else {
+        // Use lerp to smoothly go back to the original speed
+      player.speed = lerp(player.speed, originalSpeed, 0.02);
+        
+      // Check if the transition is complete
+      if (abs(player.speed - originalSpeed) < 0.1) {
+        player.speed = originalSpeed;
+        shiftPressed = false; // Reset the shiftPressed flag
+        console.log("Speed transition complete");
+      }
     }
- 
+  }
+  
+  function smoothstep(edge0, edge1, x) {
+    // Smoothstep function for smooth interpolation
+    const t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return t * t * (3.0 - 2.0 * t);
+  }
+  
+  function clamp(value, min, max) {
+    // Clamp function to restrict a value within a range
+    return Math.max(min, Math.min(max, value));
+  }
 
 
 // Rotate the player based on user input
