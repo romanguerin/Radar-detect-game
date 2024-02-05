@@ -35,6 +35,9 @@ function drawEnemy() {
     
     // Update enemy speed
     speedEnemy()
+
+    //enemy difficulty
+    drawEnemyDifficulty();
 }
 
 // Draw enemy elements for testing
@@ -147,5 +150,14 @@ function enemyDifficulty() {
 
      // TURN low: easy, high: hard
      enemy.turn = enemy.turn * difficulty;
-     console.log(enemy.turn);
+     
+}
+
+function drawEnemyDifficulty() {
+        push();
+        fill(0,0,0)
+        circle(20, 20, 15);
+        text('Difficulty: ', 35, 25);
+        text(($player.enemy), 40, 25);
+        pop();
 }

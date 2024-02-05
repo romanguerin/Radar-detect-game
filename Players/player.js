@@ -103,17 +103,15 @@ function setCustomTimeout() {
 function drawAfterBurn() {
     push();
     // draw afterburn circle
-    if (shiftPressed){
-        console.log("test");
+    if (shiftPressed){  // Orange is start of afterburn
         fill(255, 204, 0); 
     } 
-    else if (isTimeoutActive){
-        console.log("test");
+        else if (isTimeoutActive){ // Red is afterburn in cooldown
         fill(255, 0, 0); 
-    }
-        else {
-            fill(0,255,0); 
         }
+            else { // Green is ready for afterburn
+                fill(0,255,0); 
+            }
     circle(20, 20, 15);
     text('AFTERBURN', 35, 25);
     pop();
